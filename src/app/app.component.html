@@ -8,6 +8,17 @@
   <div class="row row-cols-1 row-cols-sm-2 gy-3 gy-sm-4">
     <div class="col">
       <div class="card shadow p-4 w-100">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="isProduction" [formControl]="isProduction">
+          <label class="form-check-label" for="isProduction">
+            Production
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="w-100 g-0"></div>
+    <div class="col">
+      <div class="card shadow p-4 w-100">
         <div class="d-flex flex-column">
           <h5>Encrypt</h5>
           <input class="my-3 form-control" type="search" [formControl]="encryptInput">

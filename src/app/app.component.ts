@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
   RSAIDOutput = new FormControl()
   customAge = new FormControl(false)
   customAgeInput = new FormControl()
+  isProduction = new FormControl(false)
 
   data: string = ''
   title = 'util-project'
@@ -34,11 +35,13 @@ export class AppComponent implements OnInit {
   }
 
   async decrypt() {
+    this.isProduction.getRawValue()
     this.decryptLoading = true
     await this.initControlFromClipboard(this.decryptInput)
 
     const postData = {
-      data: this.decryptInput.getRawValue()
+      data: this.decryptInput.getRawValue(),
+      production: this.isProduction.getRawValue(),
     }
 
     firstValueFrom(this.apiService.post('/decrypt', postData).pipe(
@@ -51,7 +54,8 @@ export class AppComponent implements OnInit {
     await this.initControlFromClipboard(this.encryptInput)
 
     const postData = {
-      data: this.encryptInput.getRawValue()
+      data: this.encryptInput.getRawValue(),
+      production: this.isProduction.getRawValue(),
     }
 
     firstValueFrom(this.apiService.post('/encrypt', postData).pipe(
