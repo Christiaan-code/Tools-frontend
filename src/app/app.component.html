@@ -1,17 +1,16 @@
 
-<div class="container p-4">
+<div class="container w-75 p-4">
   <div class="row">
     <h1 class="mb-5" style="text-align: center;">
       Awesome Tools
     </h1>
   </div>
-  <div class="row">
+  <div class="row row-cols-1 row-cols-sm-2 gy-3 gy-sm-4">
     <div class="col">
-      <div class="card mx-4 p-4 w-100">
+      <div class="card shadow p-4 w-100">
         <div class="d-flex flex-column">
           <h5>Encrypt</h5>
-          <!-- <p class="card-text">With supporting text below as a natural lead-in to additional content.</p> -->
-          <input class="my-3 form-control" type="text" [formControl]="encryptInput">
+          <input class="my-3 form-control" type="search" [formControl]="encryptInput">
           <button
             class="btn btn-primary"
             (click)="encrypt()"
@@ -20,11 +19,10 @@
       </div>
     </div>
     <div class="col">
-      <div class="card mx-4 p-4 w-100">
+      <div class="card shadow p-4 w-100">
         <div class="d-flex flex-column">
           <h5>Decrypt</h5>
-          <!-- <p class="card-text">With supporting text below as a natural lead-in to additional content.</p> -->
-          <input class="my-3 form-control" type="text" [formControl]="decryptInput">
+          <input class="my-3 form-control" type="search" [formControl]="decryptInput">
           <button
             class="btn btn-primary"
             (click)="decrypt()"
@@ -32,19 +30,36 @@
         </div>
       </div>
     </div>
-  </div>
-  <div class="row mt-4">
-    <div class="col-6">
-      <div class="card mx-4 p-4 w-100">
+    <div class="col">
+      <div class="card shadow p-4 w-100">
         <div class="d-flex flex-column">
           <h5>One-way encrypt</h5>
-          <!-- <p class="card-text">With supporting text below as a natural lead-in to additional content.</p> -->
-          <input class="my-3 form-control" type="text" [formControl]="oneWayEncryptInput">
+          <input class="my-3 form-control" type="search" [formControl]="oneWayEncryptInput">
           <input class="mb-4 form-control cursor-pointer" type="text" [formControl]="oneWayEncryptOutput">
           <button
             class="btn btn-primary"
             (click)="oneWayEncrypt()"
           >One-way encrypt</button>
+        </div>
+      </div>
+    </div>
+    <div class="w-100 g-0"></div>
+    <div class="col">
+      <div class="card shadow p-4 w-100">
+        <div class="d-flex flex-column">
+          <h5>RSAID Generator</h5>
+          <input class="mt-2 form-control cursor-pointer" type="text" [formControl]="RSAIDOutput">
+          <div class="d-flex my-2 align-items-center">
+            <input class="form-check-input me-2" type="checkbox" value="" [formControl]="customAge" id="checkbox">
+            <label class=" me-3" for="checkbox">
+              Set custom age
+            </label>
+            <input *ngIf="customAge.getRawValue()" class="form-control me-2" type="number" style="width: 70px;" id="customAge">
+          </div>
+          <button
+            class="btn btn-primary"
+            (click)="generateRSAID()"
+          >Generate</button>
         </div>
       </div>
     </div>
