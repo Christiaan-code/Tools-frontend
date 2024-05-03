@@ -1,0 +1,12 @@
+dist
+node_modules
+.husky
+.vscode
+*.lock
+.prettierignore
+.dockerignore
+.gitignore
+Dockerfile
+*.sql
+ormconfig.js
+src/generated/

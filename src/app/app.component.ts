@@ -1,21 +1,30 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, effect } from '@angular/core'
 import { FormControl } from '@angular/forms'
-import { ApiService } from './services/api.service'
+import { AxiosService } from './services/axios.service'
 import { tap, firstValueFrom } from 'rxjs'
+import { StateService } from './services/state.service'
+import { AppStatus } from 'src/models'
+import { ApiService } from './services/api.service'
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   decryptLoading: boolean = false
   encryptLoading: boolean = false
   oneWayEncryptLoading: boolean = false
+  appState: AppStatus = 'sleeping'
 
   constructor(
     private apiService: ApiService,
-  ) {}
+    private stateService: StateService,
+  ) {
+    effect(() => {
+      this.appState = this.stateService.appState()
+    })
+  }
 
   decryptInput = new FormControl()
   encryptInput = new FormControl()
@@ -44,9 +53,10 @@ export class AppComponent implements OnInit {
       production: this.isProduction.getRawValue(),
     }
 
-    firstValueFrom(this.apiService.post('/decrypt', postData).pipe(
-      tap((decryptedValue: string) => this.encryptInput.setValue(decryptedValue))
-    ))
+    firstValueFrom(
+      this.apiService.decrypt(postData)
+        .pipe(tap((decryptedValue: string) => this.encryptInput.setValue(decryptedValue))),
+    )
   }
 
   async encrypt() {
@@ -58,9 +68,10 @@ export class AppComponent implements OnInit {
       production: this.isProduction.getRawValue(),
     }
 
-    firstValueFrom(this.apiService.post('/encrypt', postData).pipe(
-      tap((encryptedValue: string) => this.decryptInput.setValue(encryptedValue))
-    ))
+    firstValueFrom(
+      this.apiService.encrypt(postData)
+        .pipe(tap((encryptedValue: string) => this.decryptInput.setValue(encryptedValue))),
+    )
   }
 
   async oneWayEncrypt() {
@@ -68,17 +79,18 @@ export class AppComponent implements OnInit {
     await this.initControlFromClipboard(this.oneWayEncryptInput)
 
     const postData = {
-      data: this.oneWayEncryptInput.getRawValue()
+      data: this.oneWayEncryptInput.getRawValue(),
     }
 
-    firstValueFrom(this.apiService.post('/one-way-encrypt', postData).pipe(
-      tap((encryptedValue: string) => this.oneWayEncryptOutput.setValue(encryptedValue))
-    ))
+    firstValueFrom(
+      this.apiService.oneWayEncrypt(postData)
+        .pipe(tap((encryptedValue: string) => this.oneWayEncryptOutput.setValue(encryptedValue))),
+    )
   }
 
   generateRSAID() {
     let age: number
-    if (!this.customAge.getRawValue()){
+    if (!this.customAge.getRawValue()) {
       age = Math.floor(Math.random() * 63) + 18
     } else {
       age = this.customAgeInput.getRawValue()
@@ -87,9 +99,14 @@ export class AppComponent implements OnInit {
     const month: number = Math.floor(Math.random() * 12) + 1
     const daysInMonth: number = new Date(year, month + 1, 0).getDate()
     const day: number = Math.floor(Math.random() * daysInMonth) + 1
-    const birthDate: string = year.toString().slice(-2) + month.toString().padStart(2, '0') + day.toString().padStart(2, '0')
+    const birthDate: string =
+      year.toString().slice(-2) +
+      month.toString().padStart(2, '0') +
+      day.toString().padStart(2, '0')
 
-    const ssssNumber: string = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+    const ssssNumber: string = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0')
     const a: number = Math.floor(Math.random() * 10)
     let idNumber: string = birthDate + ssssNumber + '0' + a
 

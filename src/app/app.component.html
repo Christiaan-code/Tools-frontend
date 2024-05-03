@@ -1,76 +1,102 @@
-
-<div class="container w-75 p-4">
-  <div class="row">
-    <h1 class="mb-5" style="text-align: center;">
-      Awesome Tools
-    </h1>
-  </div>
-  <div class="row row-cols-1 row-cols-sm-2 gy-3 gy-sm-4">
-    <div class="col">
-      <div class="card shadow p-4 w-100">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="" id="isProduction" [formControl]="isProduction">
-          <label class="form-check-label" for="isProduction">
-            Production
-          </label>
-        </div>
+<div class="w-100 root" [ngClass]="{ on: appState !== 'sleeping' }">
+  <div class="container w-75 p-4">
+    <div class="row">
+      <h1
+        class="mb-5 title"
+        [ngClass]="{ 'on': appState !== 'sleeping' }"
+      >
+        Awesome Tools
+      </h1>
+    </div>
+    <div class="row">
+      <div id="power-button" class="col d-flex justify-content-end position-absolute power-button">
+        <app-power-button></app-power-button>
       </div>
     </div>
-    <div class="w-100 g-0"></div>
-    <div class="col">
-      <div class="card shadow p-4 w-100">
-        <div class="d-flex flex-column">
-          <h5>Encrypt</h5>
-          <input class="my-3 form-control" type="search" [formControl]="encryptInput">
-          <button
-            class="btn btn-primary"
-            (click)="encrypt()"
-          >Encrypt</button>
-        </div>
-      </div>
+    <div
+      *ngIf="appState === 'startingUp'"
+      class="loader d-flex justify-content-center align-content-center flex-wrap"
+      style="height: 75vh"
+    >
+      <app-loader></app-loader>
     </div>
-    <div class="col">
-      <div class="card shadow p-4 w-100">
-        <div class="d-flex flex-column">
-          <h5>Decrypt</h5>
-          <input class="my-3 form-control" type="search" [formControl]="decryptInput">
-          <button
-            class="btn btn-primary"
-            (click)="decrypt()"
-          >Decrypt</button>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card shadow p-4 w-100">
-        <div class="d-flex flex-column">
-          <h5>One-way encrypt</h5>
-          <input class="my-3 form-control" type="search" [formControl]="oneWayEncryptInput">
-          <input class="mb-4 form-control cursor-pointer" type="text" [formControl]="oneWayEncryptOutput">
-          <button
-            class="btn btn-primary"
-            (click)="oneWayEncrypt()"
-          >One-way encrypt</button>
-        </div>
-      </div>
-    </div>
-    <div class="w-100 g-0"></div>
-    <div class="col">
-      <div class="card shadow p-4 w-100">
-        <div class="d-flex flex-column">
-          <h5>RSAID Generator</h5>
-          <input class="mt-2 form-control cursor-pointer" type="text" [formControl]="RSAIDOutput">
-          <div class="d-flex my-2 align-items-center">
-            <input class="form-check-input me-2" type="checkbox" value="" [formControl]="customAge" id="checkbox">
-            <label class=" me-3" for="checkbox">
-              Set custom age
-            </label>
-            <input *ngIf="customAge.getRawValue()" class="form-control me-2" type="number" style="width: 70px;" id="customAge">
+    <div class="row row-cols-1 row-cols-sm-2 gy-3 gy-sm-4 body" *ngIf="appState === 'ready'">
+      <div class="col d-flex justify-content-end">
+        <div class="card shadow p-4 w-100">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value=""
+              id="isProduction"
+              [formControl]="isProduction"
+            />
+            <label class="form-check-label" for="isProduction"> Production </label>
           </div>
-          <button
-            class="btn btn-primary"
-            (click)="generateRSAID()"
-          >Generate</button>
+        </div>
+      </div>
+      <div class="w-100 g-0"></div>
+      <div class="col">
+        <div class="card shadow p-4 w-100">
+          <div class="d-flex flex-column">
+            <h5>Encrypt</h5>
+            <input class="my-3 form-control" type="search" [formControl]="encryptInput" />
+            <button class="btn btn-primary" (click)="encrypt()">Encrypt</button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card shadow p-4 w-100">
+          <div class="d-flex flex-column">
+            <h5>Decrypt</h5>
+            <input class="my-3 form-control" type="search" [formControl]="decryptInput" />
+            <button class="btn btn-primary" (click)="decrypt()">Decrypt</button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card shadow p-4 w-100">
+          <div class="d-flex flex-column">
+            <h5>One-way encrypt</h5>
+            <input class="my-3 form-control" type="search" [formControl]="oneWayEncryptInput" />
+            <input
+              class="mb-4 form-control cursor-pointer"
+              type="text"
+              [formControl]="oneWayEncryptOutput"
+            />
+            <button class="btn btn-primary" (click)="oneWayEncrypt()">One-way encrypt</button>
+          </div>
+        </div>
+      </div>
+      <div class="w-100 g-0"></div>
+      <div class="col">
+        <div class="card shadow p-4 w-100">
+          <div class="d-flex flex-column">
+            <h5>RSAID Generator</h5>
+            <input
+              class="mt-2 form-control cursor-pointer"
+              type="text"
+              [formControl]="RSAIDOutput"
+            />
+            <div class="d-flex my-2 align-items-center">
+              <input
+                class="form-check-input me-2"
+                type="checkbox"
+                value=""
+                [formControl]="customAge"
+                id="checkbox"
+              />
+              <label class="me-3" for="checkbox"> Set custom age </label>
+              <input
+                *ngIf="customAge.getRawValue()"
+                class="form-control me-2"
+                type="number"
+                style="width: 70px"
+                id="customAge"
+              />
+            </div>
+            <button class="btn btn-primary" (click)="generateRSAID()">Generate</button>
+          </div>
         </div>
       </div>
     </div>

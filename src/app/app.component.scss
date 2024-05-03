@@ -1,3 +1,45 @@
+.root {
+  background-color: black;
+  height: 100vh;
+}
+
+.on {
+  color: rgb(33, 37, 41);
+  background-color: #fff;
+  transition: background-color 1s;
+}
+
+.card {
+  background-color: #e7f3ff;
+}
+
+.title {
+  color: black;
+  text-align: center;
+  background-color: transparent;
+}
+
+.power-button {
+  top: 30px;
+  right: 20px;
+}
+
+@keyframes myAnim {
+	0% {
+		transform: translateY(250px);
+		opacity: 0;
+	}
+
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.body, .loader {
+  animation: myAnim 1s ease 0s 1 normal forwards;
+}
+
 .center {
   border: 5px solid;
   margin: auto;

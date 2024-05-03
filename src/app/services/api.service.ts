@@ -1,31 +1,37 @@
 import { Injectable } from '@angular/core'
-import axios, { AxiosResponse } from 'axios'
-import { EMPTY, Observable, catchError, from, map, tap } from 'rxjs'
-import { backendUrl } from 'src/environment'
-import { Route } from 'src/models'
+import { delay, take, tap } from 'rxjs'
+import { StateService } from './state.service'
+import { AxiosService } from './axios.service'
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  post(route: Route, data: any): Observable<any> {
-    return from(axios.post(backendUrl+route, data )).pipe(
-      tap((response: AxiosResponse) => {
-        if (!response.status) {
-          throw new Error(`HTTP error! Status: ${response.statusText}`)
-        }
-        console.log('Response data:', response.data.data)
-      }),
-      map((response: AxiosResponse) => response.data.data),
-      tap((value: any) => {
-        if (typeof value === 'string' && !!value) {
-          navigator.clipboard.writeText(value)
-        }
-      }),
-      catchError((error) => {
-        console.error('API call failed:', error)
-        return EMPTY
-      }),
-    )
+  constructor(
+    private axios: AxiosService,
+    private stateService: StateService,
+  ) {}
+
+  getStatus() {
+    return this.axios
+      .get('/status')
+      .pipe(
+        delay(2000),
+        tap(() => this.stateService.setReady()),
+        take(1),
+      )
+      .subscribe()
+  }
+
+  decrypt(postData: { data: any; production: boolean | null }) {
+    return this.axios.post('/decrypt', postData)
+  }
+
+  encrypt(postData: { data: any; production: boolean | null }) {
+    return this.axios.post('/encrypt', postData)
+  }
+
+  oneWayEncrypt(postData: any) {
+    return this.axios.post('/one-way-encrypt', postData)
   }
 }
