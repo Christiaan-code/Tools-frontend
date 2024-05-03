@@ -1,15 +1,10 @@
 <div class="w-100 root" [ngClass]="{ on: appState !== 'sleeping' }">
   <div class="container w-75 p-4">
     <div class="row">
-      <h1
-        class="mb-5 title"
-        [ngClass]="{ 'on': appState !== 'sleeping' }"
-      >
-        Awesome Tools
-      </h1>
+      <h1 class="mb-sm-5 mb-3 title" [ngClass]="{ on: appState !== 'sleeping' }">Awesome Tools</h1>
     </div>
     <div class="row">
-      <div id="power-button" class="col d-flex justify-content-end position-absolute power-button">
+      <div id="power-button" class="col d-flex justify-content-sm-end justify-content-center power-button mb-3 mb-sm-0">
         <app-power-button></app-power-button>
       </div>
     </div>
@@ -22,7 +17,7 @@
     </div>
     <div class="row row-cols-1 row-cols-sm-2 gy-3 gy-sm-4 body" *ngIf="appState === 'ready'">
       <div class="col d-flex justify-content-end">
-        <div class="card shadow p-4 w-100">
+        <app-custom-card>
           <div class="form-check">
             <input
               class="form-check-input"
@@ -33,31 +28,31 @@
             />
             <label class="form-check-label" for="isProduction"> Production </label>
           </div>
-        </div>
+        </app-custom-card>
       </div>
       <div class="w-100 g-0"></div>
       <div class="col">
-        <div class="card shadow p-4 w-100">
+        <app-custom-card>
+          <span title>Encrypt</span>
           <div class="d-flex flex-column">
-            <h5>Encrypt</h5>
             <input class="my-3 form-control" type="search" [formControl]="encryptInput" />
             <button class="btn btn-primary" (click)="encrypt()">Encrypt</button>
           </div>
-        </div>
+        </app-custom-card>
       </div>
       <div class="col">
-        <div class="card shadow p-4 w-100">
+        <app-custom-card>
+          <span title>Decrypt</span>
           <div class="d-flex flex-column">
-            <h5>Decrypt</h5>
             <input class="my-3 form-control" type="search" [formControl]="decryptInput" />
             <button class="btn btn-primary" (click)="decrypt()">Decrypt</button>
           </div>
-        </div>
+        </app-custom-card>
       </div>
       <div class="col">
-        <div class="card shadow p-4 w-100">
+        <app-custom-card>
+          <span title>One-way encrypt</span>
           <div class="d-flex flex-column">
-            <h5>One-way encrypt</h5>
             <input class="my-3 form-control" type="search" [formControl]="oneWayEncryptInput" />
             <input
               class="mb-4 form-control cursor-pointer"
@@ -66,13 +61,13 @@
             />
             <button class="btn btn-primary" (click)="oneWayEncrypt()">One-way encrypt</button>
           </div>
-        </div>
+        </app-custom-card>
       </div>
       <div class="w-100 g-0"></div>
       <div class="col">
-        <div class="card shadow p-4 w-100">
+        <app-custom-card>
+          <span title>RSAID Generator</span>
           <div class="d-flex flex-column">
-            <h5>RSAID Generator</h5>
             <input
               class="mt-2 form-control cursor-pointer"
               type="text"
@@ -84,20 +79,21 @@
                 type="checkbox"
                 value=""
                 [formControl]="customAge"
-                id="checkbox"
+                id="customAge"
               />
-              <label class="me-3" for="checkbox"> Set custom age </label>
+              <label class="me-3" for="customAge"> Set custom age </label>
               <input
                 *ngIf="customAge.getRawValue()"
                 class="form-control me-2"
                 type="number"
                 style="width: 70px"
-                id="customAge"
+                [formControl]="customAgeInput"
+                id="customAgeInput"
               />
             </div>
             <button class="btn btn-primary" (click)="generateRSAID()">Generate</button>
           </div>
-        </div>
+        </app-custom-card>
       </div>
     </div>
   </div>

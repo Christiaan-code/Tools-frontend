@@ -6,12 +6,14 @@ import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PowerButtonComponent } from './power-button/power-button.component';
 import { LoaderComponent } from './loader/loader.component';
+import { CustomCardComponent } from './custom-card/custom-card.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     PowerButtonComponent,
     LoaderComponent,
+    CustomCardComponent,
   ],
   imports: [
     BrowserModule,

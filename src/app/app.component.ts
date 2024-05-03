@@ -1,6 +1,5 @@
 import { Component, OnInit, effect } from '@angular/core'
 import { FormControl } from '@angular/forms'
-import { AxiosService } from './services/axios.service'
 import { tap, firstValueFrom } from 'rxjs'
 import { StateService } from './services/state.service'
 import { AppStatus } from 'src/models'
@@ -90,10 +89,10 @@ export class AppComponent implements OnInit {
 
   generateRSAID() {
     let age: number
-    if (!this.customAge.getRawValue()) {
-      age = Math.floor(Math.random() * 63) + 18
-    } else {
+    if (this.customAgeInput.getRawValue()) {
       age = this.customAgeInput.getRawValue()
+    } else {
+      age = Math.floor(Math.random() * 63) + 18
     }
     const year: number = new Date().getFullYear() - age
     const month: number = Math.floor(Math.random() * 12) + 1

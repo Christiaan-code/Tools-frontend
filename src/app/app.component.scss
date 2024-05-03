@@ -22,6 +22,7 @@
 .power-button {
   top: 30px;
   right: 20px;
+  position: absolute;
 }
 
 @keyframes myAnim {
@@ -50,4 +51,12 @@
 .cursor-pointer {
   cursor: pointer;
   z-index: 100;
+}
+
+@media (max-width: 576px) {
+  .power-button {
+    top: 0px;
+    right: 0px;
+    position: relative;
+  }
 }
