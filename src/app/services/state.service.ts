@@ -1,7 +1,8 @@
 import { Injectable, Signal, WritableSignal, signal } from '@angular/core'
-import { switchMap, takeUntil, tap, timer } from 'rxjs'
+import { switchMap, timer, tap, takeUntil } from 'rxjs'
 import { AppStatus } from 'src/models'
 import { TimerService } from './timer.service'
+import { environment } from 'src/environment/environment'
 
 @Injectable({
   providedIn: 'root',
@@ -14,13 +15,15 @@ export class StateService {
 
   startApp(): void {
     this.appStateInternal.update(() => 'startingUp')
-    this.timerService.timer$
-      .pipe(
-        switchMap(() => timer(300000)),
-        tap((res) => this.goToSleep()),
-        takeUntil(this.timerService.stopTimer$),
-      )
-      .subscribe()
+    if (environment.environmentName === 'prod') {
+      this.timerService.timer$
+        .pipe(
+          switchMap(() => timer(300000)),
+          tap((res) => this.goToSleep()),
+          takeUntil(this.timerService.stopTimer$),
+        )
+        .subscribe()
+    }
   }
 
   goToSleep() {
