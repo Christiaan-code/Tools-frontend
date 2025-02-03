@@ -1,8 +1,8 @@
 import { Component, OnInit, effect } from '@angular/core'
 import { FormControl } from '@angular/forms'
-import { tap, firstValueFrom } from 'rxjs'
+import { tap, firstValueFrom, Observable, takeUntil, Subject } from 'rxjs'
 import { StateService } from './services/state.service'
-import { AppStatus } from 'src/models'
+import { AppStatus, BulkEncryptProgress, BulkEncryptResponse, BulkEncryptStatus } from 'src/models'
 import { ApiService } from './services/api.service'
 
 @Component({
@@ -16,6 +16,17 @@ export class AppComponent implements OnInit {
   oneWayEncryptLoading: boolean = false
   appState: AppStatus = 'sleeping'
 
+  selectedFile: File | null = null
+  csvRecords: { originalIdentifier: string; identifier: string }[] = []
+  progress: number = 0
+  bulkEncryptReady: boolean = false
+  returnedRecords: number = 0
+
+  progress$: Observable<BulkEncryptProgress>
+  status$: Observable<BulkEncryptStatus>
+  response$: Observable<BulkEncryptResponse>
+  unsubscribe$: Subject<void> = new Subject()
+
   constructor(
     private apiService: ApiService,
     private stateService: StateService,
@@ -23,6 +34,10 @@ export class AppComponent implements OnInit {
     effect(() => {
       this.appState = this.stateService.appState()
     })
+
+    this.progress$ = this.apiService.getWebSocketProgress()
+    this.status$ = this.apiService.getWebSocketStatus()
+    this.response$ = this.apiService.getWebSocketResponses()
   }
 
   decryptInput = new FormControl()
@@ -42,7 +57,7 @@ export class AppComponent implements OnInit {
     this.RSAIDOutput.disable()
   }
 
-  async decrypt() {
+  async decrypt(): Promise<void> {
     this.isProduction.getRawValue()
     this.decryptLoading = true
     await this.initControlFromClipboard(this.decryptInput)
@@ -53,12 +68,13 @@ export class AppComponent implements OnInit {
     }
 
     firstValueFrom(
-      this.apiService.decrypt(postData)
+      this.apiService
+        .decrypt(postData)
         .pipe(tap((decryptedValue: string) => this.encryptInput.setValue(decryptedValue))),
     )
   }
 
-  async encrypt() {
+  async encrypt(): Promise<void> {
     this.encryptLoading = true
     await this.initControlFromClipboard(this.encryptInput)
 
@@ -68,13 +84,13 @@ export class AppComponent implements OnInit {
     }
 
     firstValueFrom(
-      this.apiService.encrypt(postData)
+      this.apiService
+        .encrypt(postData)
         .pipe(tap((encryptedValue: string) => this.decryptInput.setValue(encryptedValue))),
     )
   }
 
-  async oneWayEncrypt() {
-    this.oneWayEncryptLoading = true
+  async oneWayEncrypt(): Promise<void> {
     await this.initControlFromClipboard(this.oneWayEncryptInput)
 
     const postData = {
@@ -82,12 +98,13 @@ export class AppComponent implements OnInit {
     }
 
     firstValueFrom(
-      this.apiService.oneWayEncrypt(postData)
+      this.apiService
+        .oneWayEncrypt(postData)
         .pipe(tap((encryptedValue: string) => this.oneWayEncryptOutput.setValue(encryptedValue))),
     )
   }
 
-  generateRSAID() {
+  generateRSAID(): void {
     let age: number
     if (this.customAgeInput.getRawValue()) {
       age = this.customAgeInput.getRawValue()
@@ -115,11 +132,11 @@ export class AppComponent implements OnInit {
   }
 
   performLuhnsAlgorithm(number: string): number {
-    const reversed = number.split('').reverse().map(Number)
-    let sum = 0
+    const reversed: number[] = number.split('').reverse().map(Number)
+    let sum: number = 0
 
-    for (let i = 0; i < reversed.length; i++) {
-      let digit = reversed[i]
+    for (let i: number = 0; i < reversed.length; i++) {
+      let digit: number = reversed[i]
       if (i % 2 === 0) {
         digit *= 2
 
@@ -138,6 +155,90 @@ export class AppComponent implements OnInit {
     const clipboardData = await navigator.clipboard.readText()
     if (!control.getRawValue()) {
       control.setValue(clipboardData)
+    }
+  }
+
+  async processUnencryptedIdentifiers(file: File): Promise<void> {
+    this.oneWayEncryptLoading = true
+    const text: string = await file.text()
+    this.csvRecords = text
+      .split('\n')
+      .filter((line: string) => line.trim())
+      .map((line: string) => ({
+        originalIdentifier: line.trim(),
+        identifier: line.trim(),
+      }))
+
+    await this.encryptAllIdentifiers()
+  }
+
+  private async encryptAllIdentifiers(): Promise<void> {
+    try {
+      this.apiService.connect()
+
+      const identifiers = this.csvRecords.map((record) => record.identifier)
+
+      this.response$.pipe(takeUntil(this.unsubscribe$)).subscribe({
+        next: (response: BulkEncryptResponse) => {
+          const record = this.csvRecords.find((r) => r.originalIdentifier === response.original)
+          if (record) {
+            record.identifier = response.encrypted
+          }
+        },
+      })
+
+      this.progress$.pipe(takeUntil(this.unsubscribe$)).subscribe({
+        next: (progress: BulkEncryptProgress) => {
+          this.progress = Math.round((progress.processed / progress.total) * 100)
+        },
+      })
+
+      const statusSub = this.status$.pipe(takeUntil(this.unsubscribe$)).subscribe({
+        next: (status: BulkEncryptStatus) => {
+          if (status.status === 'complete') {
+            this.saveEncryptedFile()
+            this.oneWayEncryptLoading = false
+          } else if (status.status === 'error') {
+            console.error('Encryption error:', status.message)
+            this.oneWayEncryptLoading = false
+          }
+        },
+      })
+
+      this.apiService.sendBulkEncryptRequest(identifiers)
+
+      // Clean up
+      await new Promise<void>((resolve) => {
+        statusSub.add(() => resolve())
+      })
+    } finally {
+      this.apiService.disconnect()
+      this.unsubscribe$.next()
+      this.progress = 0
+    }
+  }
+
+  private saveEncryptedFile(): void {
+    const csvContent = this.csvRecords
+      .map((record) => `${record.originalIdentifier},${record.identifier}`)
+      .join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'encrypted_identifiers.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  handleFileSelect(event: Event): void {
+    const input: HTMLInputElement = event.target as HTMLInputElement
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0]
+      this.bulkEncryptReady = true
+    } else {
+      this.selectedFile = null
+      this.bulkEncryptReady = false
     }
   }
 }

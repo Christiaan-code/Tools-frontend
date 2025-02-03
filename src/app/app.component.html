@@ -4,7 +4,10 @@
       <h1 class="mb-sm-5 mb-3 title" [ngClass]="{ on: appState !== 'sleeping' }">Awesome Tools</h1>
     </div>
     <div class="row">
-      <div id="power-button" class="col d-flex justify-content-sm-end justify-content-center power-button mb-3 mb-sm-0">
+      <div
+        id="power-button"
+        class="col d-flex justify-content-sm-end justify-content-center power-button mb-3 mb-sm-0"
+      >
         <app-power-button></app-power-button>
       </div>
     </div>
@@ -35,7 +38,12 @@
         <app-custom-card>
           <span title>Encrypt</span>
           <div class="d-flex flex-column">
-            <input class="my-3 form-control" type="search" [formControl]="encryptInput" />
+            <input
+              class="my-3 form-control"
+              type="search"
+              [formControl]="encryptInput"
+              (keyup.enter)="encrypt()"
+            />
             <button class="btn btn-primary" (click)="encrypt()">Encrypt</button>
           </div>
         </app-custom-card>
@@ -44,7 +52,12 @@
         <app-custom-card>
           <span title>Decrypt</span>
           <div class="d-flex flex-column">
-            <input class="my-3 form-control" type="search" [formControl]="decryptInput" />
+            <input
+              class="my-3 form-control"
+              type="search"
+              [formControl]="decryptInput"
+              (keyup.enter)="decrypt()"
+            />
             <button class="btn btn-primary" (click)="decrypt()">Decrypt</button>
           </div>
         </app-custom-card>
@@ -53,13 +66,71 @@
         <app-custom-card>
           <span title>One-way encrypt</span>
           <div class="d-flex flex-column">
-            <input class="my-3 form-control" type="search" [formControl]="oneWayEncryptInput" />
+            <input
+              class="my-3 form-control"
+              type="search"
+              [formControl]="oneWayEncryptInput"
+              (keyup.enter)="oneWayEncrypt()"
+            />
             <input
               class="mb-4 form-control cursor-pointer"
               type="text"
               [formControl]="oneWayEncryptOutput"
             />
             <button class="btn btn-primary" (click)="oneWayEncrypt()">One-way encrypt</button>
+          </div>
+        </app-custom-card>
+      </div>
+      <div class="col">
+        <app-custom-card>
+          <span title>Bulk one-way encrypt</span>
+          <div class="d-flex flex-column">
+            <div>
+              <div class="alert alert-info small" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                CSV should contain one identifier per line
+              </div>
+            </div>
+
+            <div *ngIf="selectedFile" class="text-muted small mb-1">
+              Selected file: {{ selectedFile.name }}
+            </div>
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="fileInput.click()"
+              [disabled]="oneWayEncryptLoading"
+            >
+              <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+              {{ selectedFile ? 'Change File' : 'Select CSV File' }}
+            </button>
+
+            <div *ngIf="oneWayEncryptLoading" class="progress mt-3">
+              <div
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                [style.width]="progress + '%'"
+              >
+                {{ progress }}%
+              </div>
+            </div>
+
+            <button
+              *ngIf="selectedFile && !oneWayEncryptLoading && bulkEncryptReady"
+              class="btn btn-primary mt-3"
+              (click)="processUnencryptedIdentifiers(selectedFile)"
+            >
+              <i class="bi bi-lock me-2"></i>
+              Encrypt File
+            </button>
+
+            <input
+              #fileInput
+              type="file"
+              class="d-none"
+              accept=".csv"
+              (change)="handleFileSelect($event)"
+            />
           </div>
         </app-custom-card>
       </div>
