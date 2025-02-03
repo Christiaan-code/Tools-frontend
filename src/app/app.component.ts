@@ -4,6 +4,7 @@ import { tap, firstValueFrom, Observable, takeUntil, Subject } from 'rxjs'
 import { StateService } from './services/state.service'
 import { AppStatus, BulkEncryptProgress, BulkEncryptResponse, BulkEncryptStatus } from 'src/models'
 import { ApiService } from './services/api.service'
+import { WebSocketService } from './services/websocket.service'
 
 @Component({
   selector: 'app-root',
@@ -30,14 +31,21 @@ export class AppComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private stateService: StateService,
+    private websocketService: WebSocketService,
   ) {
     effect(() => {
       this.appState = this.stateService.appState()
     })
+    effect(() => {
+      if (this.appState === 'sleeping') {
+        this.websocketService.disconnect()
+        this.unsubscribe$.next()
+      }
+    })
 
-    this.progress$ = this.apiService.getWebSocketProgress()
-    this.status$ = this.apiService.getWebSocketStatus()
-    this.response$ = this.apiService.getWebSocketResponses()
+    this.progress$ = this.websocketService.webSocketProgress$
+    this.status$ = this.websocketService.webSocketStatus$
+    this.response$ = this.websocketService.webSocketResponses$
   }
 
   decryptInput = new FormControl()
@@ -174,7 +182,7 @@ export class AppComponent implements OnInit {
 
   private async encryptAllIdentifiers(): Promise<void> {
     try {
-      this.apiService.connect()
+      this.websocketService.connect()
 
       const identifiers = this.csvRecords.map((record) => record.identifier)
 
@@ -205,14 +213,17 @@ export class AppComponent implements OnInit {
         },
       })
 
-      this.apiService.sendBulkEncryptRequest(identifiers)
+      this.websocketService.sendBulkEncryptRequest(identifiers)
 
       // Clean up
       await new Promise<void>((resolve) => {
         statusSub.add(() => resolve())
       })
+    } catch (error) {
+      console.error('Encryption error:', error)
+      this.oneWayEncryptLoading = false
     } finally {
-      this.apiService.disconnect()
+      this.websocketService.disconnect()
       this.unsubscribe$.next()
       this.progress = 0
     }
