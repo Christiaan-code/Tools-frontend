@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
       this.appState = this.stateService.appState()
     })
     effect(() => {
-      if (this.appState === 'sleeping') {
+      if (this.stateService.appState() === 'sleeping') {
         this.websocketService.disconnect()
         this.unsubscribe$.next()
       }
