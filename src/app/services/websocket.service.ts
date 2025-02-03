@@ -1,3 +1,4 @@
+import { Injectable } from '@angular/core'
 import { Subject, Observable } from 'rxjs'
 import { Socket, io } from 'socket.io-client'
 import { environment } from 'src/environment/environment'
@@ -8,6 +9,9 @@ import {
   BulkEncryptRequest,
 } from 'src/models'
 
+@Injectable({
+  providedIn: 'root',
+})
 export class WebSocketService {
   private socket: Socket | null = null
   private responseSubject = new Subject<BulkEncryptResponse>()
