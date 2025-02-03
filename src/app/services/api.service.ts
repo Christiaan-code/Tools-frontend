@@ -3,7 +3,7 @@ import { delay, take, tap, Observable, Subject } from 'rxjs'
 import { StateService } from './state.service'
 import { AxiosService } from './axios.service'
 import { Socket, io } from 'socket.io-client'
-import { websocketUrl } from 'src/environment'
+import { environment } from 'src/environment/environment'
 import {
   BulkEncryptProgress,
   BulkEncryptRequest,
@@ -50,7 +50,7 @@ export class ApiService {
 
   connect(): void {
     if (!this.socket) {
-      this.socket = io(websocketUrl)
+      this.socket = io(environment.websocketUrl)
 
       this.socket.on('bulk-one-way-encrypt-result', (response: BulkEncryptResponse) => {
         this.responseSubject.next(response)
